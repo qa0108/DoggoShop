@@ -1,13 +1,9 @@
 using DoggoShopClient.DTO;
 using DoggoShopClient.Models;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
-using WebRazor.Materials;
 
 namespace WebRazor.Pages
 {
