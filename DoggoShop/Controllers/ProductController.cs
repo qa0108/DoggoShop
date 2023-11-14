@@ -23,6 +23,15 @@ namespace DoggoShopAPI.Controllers
             var product = context.Products.Where(p => p.DeletedAt == null).ToList();
             return Ok(product);
         }
+
+        [HttpPost]
+        public IActionResult AddProduct(Product p)
+        {
+            this.context.Products.Add(p);
+            this.context.SaveChanges();
+            return this.Ok();
+        }
+        
         [HttpGet("getNewActiveProducts/{number}")]
         public IActionResult GetNewActiveProducts(int number)
         {

@@ -14,6 +14,8 @@ using WebRazor.Materials;
 
 namespace WebRazor.Pages.Admin.Product
 {
+    using Product = DoggoShopClient.Models.Product;
+
     [Authorize(Roles = "Employee")]
     public class IndexModel : PageModel
     {
@@ -47,31 +49,41 @@ namespace WebRazor.Pages.Admin.Product
         {
             if (Search == null) Search = "";
 
-            Categories = await dbContext.Categories.ToListAsync();
-            var queryRaw = dbContext.Products
+            var response = await this.client.GetAsync("https://localhost:5000/api/Category");
+            var data     = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            this.Categories = JsonSerializer.Deserialize<List<Category>>(data, options);
+            
+            response = await this.client.GetAsync("https://localhost:5000/api/Product");
+            data     = await response.Content.ReadAsStringAsync();
+            var products = JsonSerializer.Deserialize<List<Product>>(data, options);
+            var queryRaw = products
                 .Where(p => p.DeletedAt == null)
-               .Where(p => p.ProductName.Contains(Search));
+                .Where(p => p.ProductName.Contains(Search))
+                .ToList();
 
             if (CatId != 0)
             {
-                queryRaw = queryRaw.Where(p => p.CategoryId == CatId);
+                queryRaw = queryRaw.Where(p => p.CategoryId == CatId).ToList();
             }
 
             var query = queryRaw;
 
-            query = query.Include(p => p.Category)
-                .OrderByDescending(p => p.ProductId);
+            query = query.OrderByDescending(p => p.ProductId).ToList();
 
             if (paging)
             {
-                query = query.Skip((Page - 1) * perPage).Take(perPage);
+                query = query.Skip((Page - 1) * perPage).Take(perPage).ToList();
             }
 
-            Products = await query.ToListAsync();
+            Products = query;
 
             PageLink page = new PageLink(perPage);
             String param = "categoryId=" + CatId + "&txtSearch=" + Search;
-            PagesLink = page.getLink(Page, await queryRaw.CountAsync(), "/Admin/Product/Index?" + param + "&");
+            PagesLink = page.getLink(Page, queryRaw.Count(), "/Admin/Product/Index?" + param + "&");
         }
 
         public async Task<IActionResult> OnGetAsync()

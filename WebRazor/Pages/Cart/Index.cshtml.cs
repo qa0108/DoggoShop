@@ -1,14 +1,10 @@
-using iText.Layout.Properties;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text.Json;
 using System.Transactions;
-using Table = iText.Layout.Element.Table;
-using iText.Layout;
 using System.Security.Claims;
 using System.Text;
 using DoggoShopClient.Models;
-using DocumentFormat.OpenXml.Drawing;
 
 namespace WebRazor.Pages.Cart
 {

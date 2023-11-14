@@ -64,7 +64,6 @@
                 <th>UnitPrice</th>
                 <th>Unit</th>
                 <th>UnitsInStock</th>
-                <th>Category</th>
                 <th>Discontinued</th>
                 <th></th>
             </tr>
@@ -76,7 +75,6 @@
                     <td>@(((decimal)item.UnitPrice).ToString("G29"))</td>
                     <td>@item.QuantityPerUnit</td>
                     <td>@item.UnitsInStock</td>
-                    <td>@item.Category.CategoryName</td>
                     <td>@item.Discontinued</td>
                     <td>
                         <a asp-page="/Admin/Product/Edit" asp-route-id="@item.ProductId">Edit</a> &nbsp; | &nbsp;
