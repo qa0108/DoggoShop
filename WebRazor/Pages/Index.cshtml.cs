@@ -33,7 +33,7 @@ namespace WebRazor.Pages
 
             if (check != null && check.Value.Equals("Employee"))
             {
-                return NotFound();
+                return RedirectToPage("/Admin/Dashboard/Index");
             }
             CategoryApiUrl = "https://localhost:5000/api/Category";
             var responseCategory = await client.GetAsync(CategoryApiUrl);

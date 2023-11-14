@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text.Json;
-using DoggoShopClient.Models;
 namespace WebRazor.Pages.Product
 {
     public class DetailModel : PageModel

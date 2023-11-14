@@ -8,14 +8,20 @@ using WebRazor.Materials;
 
 namespace WebRazor.Pages.Admin.Employee
 {
+    using System.Text;
+    using System.Text.Json;
+    using Employee = DoggoShopClient.Models.Employee;
+
     [Authorize(Roles = "Employee")]
     public class IndexModel : PageModel
     {
         private readonly PRN221DBContext dbContext;
+        private          HttpClient      client;
 
         public IndexModel(PRN221DBContext dbContext)
         {
             this.dbContext = dbContext;
+            this.client    = new HttpClient();
         }
 
         [FromQuery(Name = "page")] public int Page { get; set; } = 1;
@@ -37,29 +43,42 @@ namespace WebRazor.Pages.Admin.Employee
         {
             if (Search == null) Search = "";
 
-            var query = dbContext.Employees;
+            var result = await this.client.GetAsync("https://localhost:5000/api/Employee");
+            var data   = await result.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            var employees = JsonSerializer.Deserialize<List<Employee>>(data, options);
 
 
-            Employees = await query
+            Employees = employees
                 .OrderByDescending(p => p.EmployeeId)
                 .Skip((Page - 1) * perPage).Take(perPage)
-                .ToListAsync();
+                .ToList();
 
             PageLink page = new PageLink(perPage);
-            PagesLink = page.getLink(Page, await query.CountAsync(), "/Admin/Employee/Index?");
+            PagesLink = page.getLink(Page, employees.Count, "/Admin/Employee/Index?");
         }
 
         public async Task<IActionResult> OnGetActive(int? id)
         {
-
-            DoggoShopClient.Models.Employee employee = await dbContext.Employees.FirstOrDefaultAsync(p => p.EmployeeId == id);
+            
+            var response = await this.client.GetAsync("https://localhost:5000/api/Employee/Get/" + id);
+            var data     = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            var employee = JsonSerializer.Deserialize<Employee>(data, options);
             if (employee != null)
             {
                 employee.Active = !employee.Active;
-                await dbContext.SaveChangesAsync();
+                var content = new StringContent(JsonSerializer.Serialize(employee), Encoding.UTF8, "application/json");
+                await this.client.PutAsync("https://localhost:5000/api/Employee/Add/", content);
             }
 
-            return Redirect("/Admin/Employee/Index");
+            return this.Redirect("/Admin/Employee/Index");
         }
     }
 }

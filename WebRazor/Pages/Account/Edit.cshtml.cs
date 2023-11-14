@@ -89,7 +89,7 @@ namespace WebRazor.Pages.Account
             var accDTO = new AccountDTO()
             {
                 Email = Auth.Email,
-                Password = HashPassword.Hash(Auth.Password),
+                Password = Auth.Password,
                 CompanyName = Auth.Customer.CompanyName,
                 ContactName = Auth.Customer.ContactName,
                 ContactTitle = Auth.Customer.ContactTitle,

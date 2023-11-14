@@ -10,13 +10,17 @@ using WebRazor.Materials;
 
 namespace WebRazor.Pages.Admin.Order
 {
+    using System.Text.Json;
+    using Order = DoggoShopClient.Models.Order;
+
     [Authorize(Roles = "Employee")]
     public class IndexModel : PageModel
     {
-        private readonly PRN221DBContext dbContext;
-        [FromQuery(Name = "page")] public int Page { get; set; } = 1;
-        [BindProperty] public List<DoggoShopClient.Models.Order> Orders { get; set; }
-        public List<String> PagesLink { get; set; } = new List<string>();
+        private                           HttpClient                         client = new();
+        private readonly                  PRN221DBContext                    dbContext;
+        [FromQuery(Name = "page")] public int                                Page      { get; set; } = 1;
+        [BindProperty]             public List<DoggoShopClient.Models.Order> Orders    { get; set; }
+        public                            List<String>                       PagesLink { get; set; } = new List<string>();
 
         [FromQuery(Name = "txtStartOrderDate")] public DateTime StartDate { get; set; }
         [FromQuery(Name = "txtEndOrderDate")] public DateTime EndDate { get; set; }
@@ -43,8 +47,13 @@ namespace WebRazor.Pages.Admin.Order
 
         public async Task LoadData(bool paging = true)
         {
-            var queryRaw = dbContext.Orders
-                .Where(q => true);
+            var response = await this.client.GetAsync("https://localhost:5000/api/Order/GetAll/");
+            var data     = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            var queryRaw = JsonSerializer.Deserialize<List<Order>>(data, options);
 
             SqlDateTime? sqlStartDate = validateDateTime(StartDate);
             SqlDateTime? sqlEndDate = validateDateTime(EndDate);
@@ -52,22 +61,18 @@ namespace WebRazor.Pages.Admin.Order
 
             if (sqlStartDate != null)
             {
-                queryRaw = queryRaw.Where(q => (DateTime)q.OrderDate >= StartDate);
+                queryRaw = queryRaw.Where(q => (DateTime)q.OrderDate >= StartDate).ToList();
             }
 
             if (sqlEndDate != null)
             {
-                queryRaw = queryRaw.Where(q => (DateTime)q.OrderDate <= EndDate);
+                queryRaw = queryRaw.Where(q => (DateTime)q.OrderDate <= EndDate).ToList();
             }
-
-            var query = queryRaw;
-                query = query.Include(q => q.Customer).Include(q => q.Employee)
-                    .OrderByDescending(o => o.OrderDate);
-
+            
             if (paging)
-                query = query.Skip((Page - 1) * perPage).Take(perPage);
+                queryRaw = queryRaw.Skip((Page - 1) * perPage).Take(perPage).ToList();
 
-            Orders = await query.ToListAsync();
+            Orders = queryRaw.ToList();
 
             ViewData["StartDate"] = sqlStartDate != null ? StartDate.Date.ToString("yyyy-MM-dd") : "";
             ViewData["EndDate"] = sqlEndDate != null ? EndDate.Date.ToString("yyyy-MM-dd") : "";
@@ -76,7 +81,7 @@ namespace WebRazor.Pages.Admin.Order
             String param = (!(ViewData["StartDate"].Equals("") && ViewData["EndDate"].Equals("")) 
                 ? "txtStartOrderDate=" + ViewData["StartDate"] 
                 + "&txtEndOrderDate=" + ViewData["EndDate"] : "") + "&";
-            PagesLink = page.getLink(Page, await queryRaw.CountAsync(), "/Admin/Order/Index?" + param);
+            PagesLink = page.getLink(Page, queryRaw.Count, "/Admin/Order/Index?" + param);
         }
 
 
@@ -91,7 +96,13 @@ namespace WebRazor.Pages.Admin.Order
         public async Task<IActionResult> OnGetCancel(int? id, string target)
         {
 
-            DoggoShopClient.Models.Order order = await dbContext.Orders.FirstOrDefaultAsync(o => o.OrderId == id);
+            var response = await this.client.GetAsync("https://localhost:5000/api/Order/GetAll/");
+            var data     = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            var order = JsonSerializer.Deserialize<List<Order>>(data, options).FirstOrDefault(x=>x.OrderId == id);
 
             await LoadData();
 

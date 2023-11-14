@@ -16,6 +16,15 @@ namespace DoggoShopAPI.Controllers
             await context.SaveChangesAsync();
             return Ok();
         }
+
+        [HttpGet]
+        [Route("GetAll")]
+        public async Task<IActionResult> GetAll()
+        {
+            var orders = await this.context.Orders.ToListAsync();
+            return this.Ok(orders);
+        }
+        
         [HttpGet("getLastOrder")]
         public async Task<IActionResult> GetLastOrderAsync()
         {

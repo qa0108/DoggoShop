@@ -10,6 +10,8 @@ using WebRazor.Materials;
 
 namespace WebRazor.Pages.Order
 {
+    using Product = DoggoShopClient.Models.Product;
+
     public class IndexModel : PageModel
     {
         private HttpClient client;
@@ -101,7 +103,15 @@ namespace WebRazor.Pages.Order
                 return NotFound();
             }
 
-            DoggoShopClient.Models.Product product = (await dbContext.Products.Where(p => p.DeletedAt == null).FirstOrDefaultAsync(p => p.ProductId == id));
+            var api      = "https://localhost:5000/api/Product";
+            var response = await client.GetAsync(api);
+            var data     = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            var products = JsonSerializer.Deserialize<List<Product>>(data, options);
+            var product  = products.FirstOrDefault(p => p.ProductId == id && p.DeletedAt != null);
 
             if (product == null || product.UnitsInStock == 0)
             {

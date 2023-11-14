@@ -63,7 +63,7 @@ namespace WebRazor.Pages.Account
 
             var acc = await this.IsEmailExists(Account.Email);
 
-            if (acc != null)
+            if (acc)
             {
                 ViewData["msg"] = "This email is exist";
                 return Page();

@@ -83,10 +83,10 @@ namespace WebRazor.Pages.Product
             switch (Order)
             {
                 case "Asc":
-                    list = (List<DoggoShopClient.Models.Product>?)list.OrderBy(p => p.UnitPrice);
+                    list = list.OrderBy(p => p.UnitPrice).ToList();
                     break;
                 case "Desc":
-                    list = (List<DoggoShopClient.Models.Product>?)list.OrderByDescending(p => p.UnitPrice);
+                    list = list.OrderByDescending(p => p.UnitPrice).ToList();
                     break;
             }
 

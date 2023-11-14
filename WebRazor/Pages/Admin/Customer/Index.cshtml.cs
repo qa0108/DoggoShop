@@ -3,19 +3,26 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using WebRazor.Materials;
+using System.Text.Json;
 
 namespace WebRazor.Pages.Admin.Customer
 {
+    using Newtonsoft.Json;
+    using Customer = DoggoShopClient.Models.Customer;
+    using JsonSerializer = System.Text.Json.JsonSerializer;
+    using JsonSerializerOptions = System.Text.Json.JsonSerializerOptions;
+
     [Authorize(Roles = "Employee")]
     public class IndexModel : PageModel
     {
         private readonly PRN221DBContext dbContext;
+        private          HttpClient      client;
 
         public IndexModel(PRN221DBContext dbContext)
         {
             this.dbContext = dbContext;
+            this.client    = new HttpClient();
         }
 
         [FromQuery(Name = "page")] public int Page { get; set; } = 1;
@@ -53,7 +60,15 @@ namespace WebRazor.Pages.Admin.Customer
 
         public async Task<IActionResult> OnGetActive(string? id)
         {
-            DoggoShopClient.Models.Customer customer = await dbContext.Customers.FirstOrDefaultAsync(p => p.CustomerId == id);
+            var cusApi = "https://localhost:5000/api/Customer";
+            var response = await this.client.GetAsync(cusApi);
+            var data     = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            var customers = JsonSerializer.Deserialize<List<Customer>>(data, options);
+            var customer  = customers.FirstOrDefault(p => p.CustomerId == id);
             if (customer != null)
             {
                 customer.Active = !customer.Active;
