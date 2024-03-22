@@ -43,19 +43,27 @@ namespace WebRazor.Pages.Admin.Customer
         public async Task Load()
         {
             if (Search == null) Search = "";
+            
 
-            var query = dbContext.Customers
-               .Where(p => p.ContactName.Contains(Search));
-
-
-            Customers = await query
+            var cusApi   = "https://localhost:5000/api/Customer";
+            var response = await this.client.GetAsync(cusApi);
+            var data     = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            var customers = JsonSerializer.Deserialize<List<Customer>>(data, options);
+            var query = customers
+                .Where(p => p.ContactName.Contains(Search));
+            
+            Customers =  query
                 .OrderByDescending(p => p.CustomerId)
                 .Skip((Page - 1) * perPage).Take(perPage)
-                .ToListAsync();
+                .ToList();
 
             PageLink page = new PageLink(perPage);
             String param = "txtSearch=" + Search;
-            PagesLink = page.getLink(Page, await query.CountAsync(), "/Admin/Customer/Index?" + param + "&");
+            PagesLink = page.getLink(Page,  query.Count(), "/Admin/Customer/Index?" + param + "&");
         }
 
         public async Task<IActionResult> OnGetActive(string? id)
