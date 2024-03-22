@@ -32,14 +32,14 @@ namespace DoggoShopAPI.Controllers
             return this.Ok();
         }
         
-        [HttpGet("getNewActiveProducts/{number}")]
+        [HttpGet("getNewActiveProducts/{number:int}")]
         public IActionResult GetNewActiveProducts(int number)
         {
             var product = context.Products.Where(p => p.DeletedAt == null)
                 .OrderByDescending(p => p.ProductId).Take(number).ToList();
             return Ok(product);
         }
-        [HttpGet("getNumberOfProductsByCategory/{id}")]
+        [HttpGet("getNumberOfProductsByCategory/{id:int}")]
         public async Task<IActionResult> GetNumberOfProductsByCategory(int id)
         {
             var result = await context.Products
@@ -48,7 +48,7 @@ namespace DoggoShopAPI.Controllers
                 .CountAsync();
             return Ok(result);
         }
-        [HttpGet("getActiveProductByCategory/{id}")]
+        [HttpGet("getActiveProductByCategory/{id:int}")]
         public async Task<IActionResult> GetActiveProductByCategory(int id)
         {
             var result = context.Products
@@ -56,6 +56,27 @@ namespace DoggoShopAPI.Controllers
                 .Where(p => p.CategoryId == id)
                 .ToList();
             return Ok(result);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateProduct(Product product)
+        {
+            this.context.Products.Update(product);
+            await this.context.SaveChangesAsync();
+            return this.Ok();
+        }
+        
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            var product = await this.context.Products.FindAsync(id);  
+            if (product == null)  
+            {  
+                return NotFound();  
+            }  
+            this.context.Products.Remove(product);
+            await this.context.SaveChangesAsync();
+            return this.Ok();
         }
     }
 }

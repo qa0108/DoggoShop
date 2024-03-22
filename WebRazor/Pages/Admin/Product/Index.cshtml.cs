@@ -33,14 +33,12 @@ namespace WebRazor.Pages.Admin.Product
 
         public List<DoggoShopClient.Models.Product> Products;
         public List<Category> Categories;
-        private readonly PRN221DBContext dbContext;
         private int perPage = 10;
         private IWebHostEnvironment _hostingEnvironment;
         private readonly IHubContext<HubServer> hubContext;
 
-        public IndexModel(PRN221DBContext dbContext, IWebHostEnvironment environment, IHubContext<HubServer> hubContext)
+        public IndexModel(IWebHostEnvironment environment, IHubContext<HubServer> hubContext)
         {
-            this.dbContext = dbContext;
             _hostingEnvironment = environment;
             this.hubContext = hubContext;
         }
@@ -97,78 +95,78 @@ namespace WebRazor.Pages.Admin.Product
         public async Task<IActionResult> OnPostAsync()
         {
 
-            await ReadFile();
+            //await ReadFile();
 
             await Load();
 
             return Page();
         }
 
-        public async Task<bool> ReadFile()
-        {
-            
-            DataSet ds = new DataSet();
-            IExcelDataReader reader = null;
-            Stream FileStream = null;
-
-            ViewData["Fail"] = "Have some error with data. Need include ProductName, CategoryId, QuantityPerUnit,"
-+ " UnitPrice, UnitsInStock, Discontinued";
-            ViewData["Success"] = "";
-
-            try
-            {
-                FileStream = FileUpload.OpenReadStream();
-                if (FileStream != null)
-                {
-                    if (FileUpload.FileName.EndsWith(".xls"))
-                        reader = ExcelReaderFactory.CreateBinaryReader(FileStream);
-                    else if (FileUpload.FileName.EndsWith(".xlsx"))
-                        reader = ExcelReaderFactory.CreateOpenXmlReader(FileStream);
-
-                    ds = reader.AsDataSet();
-                    reader.Close();
-                }
-                CategoryApiUrl = "";
-                if (ds != null && ds.Tables.Count > 0)
-                {
-                    DataTable dtRecords = ds.Tables[0];
-                    for (int i = 1; i < dtRecords.Rows.Count; i++)
-                    {
-                        var productId = dtRecords.Rows[i][0];
-                        DoggoShopClient.Models.Product product = new DoggoShopClient.Models.Product();
-                        product.ProductName = Convert.ToString(dtRecords.Rows[i][1]);
-                        CategoryApiUrl = "https://localhost:5000/api/Category/getCategoryByName/" + dtRecords.Rows[i][5];
-                        var response = await client.GetAsync(CategoryApiUrl);
-                        var data = await response.Content.ReadAsStringAsync();
-                        var options = new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        };
-                        var category = JsonSerializer.Deserialize<Category>(data, options);
-                        product.CategoryId = dtRecords.Rows[i][5].Equals("NULL") ? null : category.CategoryId;
-                        product.QuantityPerUnit = dtRecords.Rows[i][3].Equals("NULL") ? null : Convert.ToString(dtRecords.Rows[i][3]);
-                        product.UnitPrice = dtRecords.Rows[i][2].Equals("NULL") ? null : Convert.ToDecimal(dtRecords.Rows[i][2]);
-                        product.UnitsInStock = dtRecords.Rows[i][4].Equals("NULL") ? null : Convert.ToInt16(dtRecords.Rows[i][4]);
-                        product.Discontinued = Convert.ToBoolean(dtRecords.Rows[i][6]);
-
-                        if(dbContext.Products.FirstOrDefault(p => !p.ProductId.Equals(productId)) == null)
-                        {
-                            await dbContext.Products.AddAsync(product);
-                        }
-                    }
-
-                    await dbContext.SaveChangesAsync();
-                    await hubContext.Clients.All.SendAsync("Reload");
-                    ViewData["Fail"] = "";
-                    ViewData["Success"] = "Upload Success";
-                }
-            }
-            catch (Exception e)
-            {
-
-            }
-            return true;
-        }
+//         public async Task<bool> ReadFile()
+//         {
+//             
+//             DataSet ds = new DataSet();
+//             IExcelDataReader reader = null;
+//             Stream FileStream = null;
+//
+//             ViewData["Fail"] = "Have some error with data. Need include ProductName, CategoryId, QuantityPerUnit,"
+// + " UnitPrice, UnitsInStock, Discontinued";
+//             ViewData["Success"] = "";
+//
+//             try
+//             {
+//                 FileStream = FileUpload.OpenReadStream();
+//                 if (FileStream != null)
+//                 {
+//                     if (FileUpload.FileName.EndsWith(".xls"))
+//                         reader = ExcelReaderFactory.CreateBinaryReader(FileStream);
+//                     else if (FileUpload.FileName.EndsWith(".xlsx"))
+//                         reader = ExcelReaderFactory.CreateOpenXmlReader(FileStream);
+//
+//                     ds = reader.AsDataSet();
+//                     reader.Close();
+//                 }
+//                 CategoryApiUrl = "";
+//                 if (ds != null && ds.Tables.Count > 0)
+//                 {
+//                     DataTable dtRecords = ds.Tables[0];
+//                     for (int i = 1; i < dtRecords.Rows.Count; i++)
+//                     {
+//                         var productId = dtRecords.Rows[i][0];
+//                         DoggoShopClient.Models.Product product = new DoggoShopClient.Models.Product();
+//                         product.ProductName = Convert.ToString(dtRecords.Rows[i][1]);
+//                         CategoryApiUrl = "https://localhost:5000/api/Category/getCategoryByName/" + dtRecords.Rows[i][5];
+//                         var response = await client.GetAsync(CategoryApiUrl);
+//                         var data = await response.Content.ReadAsStringAsync();
+//                         var options = new JsonSerializerOptions
+//                         {
+//                             PropertyNameCaseInsensitive = true
+//                         };
+//                         var category = JsonSerializer.Deserialize<Category>(data, options);
+//                         product.CategoryId = dtRecords.Rows[i][5].Equals("NULL") ? null : category.CategoryId;
+//                         product.QuantityPerUnit = dtRecords.Rows[i][3].Equals("NULL") ? null : Convert.ToString(dtRecords.Rows[i][3]);
+//                         product.UnitPrice = dtRecords.Rows[i][2].Equals("NULL") ? null : Convert.ToDecimal(dtRecords.Rows[i][2]);
+//                         product.UnitsInStock = dtRecords.Rows[i][4].Equals("NULL") ? null : Convert.ToInt16(dtRecords.Rows[i][4]);
+//                         product.Discontinued = Convert.ToBoolean(dtRecords.Rows[i][6]);
+//
+//                         if(dbContext.Products.FirstOrDefault(p => !p.ProductId.Equals(productId)) == null)
+//                         {
+//                             await dbContext.Products.AddAsync(product);
+//                         }
+//                     }
+//
+//                     await dbContext.SaveChangesAsync();
+//                     await hubContext.Clients.All.SendAsync("Reload");
+//                     ViewData["Fail"] = "";
+//                     ViewData["Success"] = "Upload Success";
+//                 }
+//             }
+//             catch (Exception e)
+//             {
+//
+//             }
+//             return true;
+//         }
 
         public async Task<IActionResult> OnGetExport()
         {
