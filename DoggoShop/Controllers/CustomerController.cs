@@ -1,11 +1,9 @@
-﻿using DoggoShopAPI.DTO;
-using DoggoShopAPI.Models;
-using DoggoShopAPI.Utility;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-
-namespace DoggoShopAPI.Controllers
+﻿namespace DoggoShopAPI.Controllers
 {
+    using DoggoShopAPI.Models;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+
     [ApiController]
     [Route("api/[controller]")]
     public class CustomerController : Controller

@@ -42,7 +42,7 @@ namespace WebRazor.Pages.Account
             var userList = JsonSerializer.Deserialize<List<DoggoShopClient.Models.Account>>(data, options).ToList();
             var acc = userList.SingleOrDefault(
                     a => a.Email.Equals(Account.Email)
-                    && a.Password.Equals(HashPassword.Hash(Account.Password)));
+                    && a.Password.Equals(Account.Password));
 
             if (acc == null)
             {
