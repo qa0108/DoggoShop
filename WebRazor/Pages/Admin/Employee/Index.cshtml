@@ -13,11 +13,6 @@
             <tr>
                 <th>EmployeeId</th>
                 <th>Full Name</th>
-                <th>Title</th>
-                <th>Title Of Courtery</th>
-                <th>Address</th>
-                <th>Birth Date</th>
-                <th>Hire Date</th>
                 <th>Active</th>
             </tr>
             @foreach (var emp in Model.Employees)
@@ -25,11 +20,6 @@
                 <tr>
                     <td>#@emp.EmployeeId</td>
                     <td>@emp.FirstName @emp.LastName</td>
-                    <td>@emp.Title</td>
-                    <td>@emp.TitleOfCourtesy</td>
-                    <td>@emp.Address</td>
-                    <td>@((emp.BirthDate == null ? DateTime.Now : (DateTime)emp.BirthDate).ToString("dd/MM/yyyy"))</td>
-                    <td>@((emp.HireDate == null ? DateTime.Now : (DateTime)emp.HireDate).ToString("dd/MM/yyyy"))</td>
                     <td>
                         <a class="delete" id="@emp.EmployeeId"
                        asp-page="/Admin/Employee/Index" asp-route-id="@emp.EmployeeId"

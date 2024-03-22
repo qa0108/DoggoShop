@@ -1,15 +1,12 @@
-using DoggoShopClient.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using WebRazor.Materials;
-
 namespace WebRazor.Pages.Admin.Employee
 {
     using System.Text;
     using System.Text.Json;
+    using DoggoShopClient.Models;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.RazorPages;
+    using WebRazor.Materials;
     using Employee = DoggoShopClient.Models.Employee;
 
     [Authorize(Roles = "Employee")]
@@ -26,7 +23,7 @@ namespace WebRazor.Pages.Admin.Employee
 
         [FromQuery(Name = "page")] public int Page { get; set; } = 1;
         private int perPage = 10;
-        public List<DoggoShopClient.Models.Employee> Employees  { get; set; }
+        public List<Employee> Employees  { get; set; }
         [FromQuery(Name = "txtSearch")] public string Search { get; set; } = "";
 
         public List<String> PagesLink { get; set; } = new List<string>();
@@ -43,7 +40,7 @@ namespace WebRazor.Pages.Admin.Employee
         {
             if (Search == null) Search = "";
 
-            var result = await this.client.GetAsync("https://localhost:5000/api/Employee");
+            var result = await this.client.GetAsync("https://localhost:5000/api/Employee/GetAll");
             var data   = await result.Content.ReadAsStringAsync();
             var options = new JsonSerializerOptions
             {
